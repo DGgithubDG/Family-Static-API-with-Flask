@@ -15,6 +15,27 @@ CORS(app)
 # create the jackson family object
 jackson_family = FamilyStructure("Jackson")
 
+jackson_family.add_member({
+                "first_name": "John",
+                "last_name": "Jackson",
+                "age": 33,
+                "lucky_numbers": [7, 13, 22]
+            })
+
+jackson_family.add_member({
+                "first_name": "Jane",
+                "last_name": "Jackson",
+                "age": 35,
+                "lucky_numbers": [10, 14, 3]
+            })
+
+jackson_family.add_member({
+                "first_name": "Jimmy",
+                "last_name": "Jackson",
+                "age": 5,
+                "lucky_numbers": [1]
+            })
+
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
@@ -33,10 +54,60 @@ def handle_hello():
     response_body = {
         "hello": "world",
         "family": members
+    #   + id: Int
+    #  first_name: String
+    #  last_name: String (Always Jackson)
+    #  age: Int > 0
+    #  lucky_numbers: Array of int
+
+
     }
 
 
     return jsonify(response_body), 200
+
+
+@app.route('/members', methods=["POST"])
+def create_member():
+    first_name = request.json.get("first_name")
+    last_name = request.json.get("last_name")
+    id = request.json.get("id")
+    lucky_numbers = request.json.get("lucky_numbers")
+    age = request.json.get("age")
+    member = {
+        "id":id or jackson_family._generateId(),
+        "first_name":first_name,
+        "last_name":last_name,
+        "lucky_numbers":lucky_numbers,
+        "age":age,
+    }
+    jackson_family.add_member(member)
+
+
+
+    
+#    request_body_member = request.get_json()
+#    member1 = Members(first_name=request_body_members["email"], last_name=request_body_members["last_name"])
+#    db.session.commit
+#    db.session.add(member1)
+#    request_body_member = request.get_json()
+
+    return jsonify({"member_added":True}) , 200
+
+@app.route('/user/<int:members_id>', methods=["DELETE"])
+def delete_member(members_id):
+     member = jackson_family.delete_member(members_id)
+     
+    
+#    raise APIException("User not found", status_code=404)
+   # planet1 = Planet(planet_name=request_body_planet["planet_name"], planet_size=request_body_planet["planet_size"])
+ #   db.session.delete(user1)
+ #   db.session.commit
+   # request_body_planet = request.get_json()
+
+     return jsonify({
+        "done":True
+      }) , 200
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
